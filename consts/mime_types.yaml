@@ -1,0 +1,66 @@
+audio:
+  .aac:
+    type: audio/mp4
+  .aif:
+    type: audio/x-aiff
+  .aiff:
+    type: audio/x-aiff
+  .alac:
+    type: audio/mp4
+    lossless: true
+  .ape:
+    type: audio/x-monkeys-audio
+    lossless: true
+  .dsf:
+    type: audio/dsd
+    lossless: true
+  .flac:
+    type: audio/flac
+    lossless: true
+  .m3u:
+    type: audio/x-mpegurl
+  .m4a:
+    type: audio/mp4
+  .m4b:
+    type: audio/mp4
+  .mka:
+    type: audio/x-matroska
+  .mp3:
+    type: audio/mpeg
+  .mpc:
+    type: audio/x-musepack
+  .oga:
+    type: audio/ogg
+  .ogg:
+    type: audio/ogg
+  .opus:
+    type: audio/ogg
+  .pls:
+    type: audio/x-scpls
+  .shn:
+    type: audio/x-shn
+    lossless: true
+  .tak:
+    type: audio/tak
+    lossless: true
+  .wav:
+    type: audio/x-wav
+    lossless: true
+  .wma:
+    type: audio/x-ms-wma
+  .wv:
+    type: audio/x-wavpack
+    lossless: true
+  .wvp:
+    type: audio/x-wavpack
+    lossless: true
+image:
+  .bmp: image/bmp
+  .gif: image/gif
+  .jpeg: image/jpeg
+  .jpg: image/jpeg
+  .png: image/png
+  .webp: image/webp
+other:
+  .css: text/css
+  .js: text/javascript

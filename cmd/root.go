@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -59,6 +60,9 @@ func preRun() {
 		println(resources.Banner())
 	}
 	conf.Load()
+	if err := consts.LoadMimeTypesOverride(filepath.Join(conf.Server.DataFolder, "resources", "mime_types.yaml")); err != nil {
+		log.Fatal("Error loading MIME types: ", err)
+	}
 }
 
 func runNavidrome() {
