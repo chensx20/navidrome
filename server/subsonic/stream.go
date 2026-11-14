@@ -18,6 +18,9 @@ import (
 )
 
 func (api *Router) serveStream(ctx context.Context, w http.ResponseWriter, r *http.Request, stream *core.Stream, id string) {
+	if contentType := stream.ContentType(); contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
 	if stream.Seekable() {
 		http.ServeContent(w, r, stream.Name(), stream.ModTime(), stream)
 	} else {

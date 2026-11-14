@@ -1,10 +1,11 @@
 package model
 
 import (
-	"mime"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/navidrome/navidrome/consts"
 )
 
 var excludeAudioType = []string{
@@ -14,13 +15,13 @@ var excludeAudioType = []string{
 
 func IsAudioFile(filePath string) bool {
 	extension := filepath.Ext(filePath)
-	mimeType := mime.TypeByExtension(extension)
+	mimeType := consts.MimeTypeByExtension(extension)
 	return !slices.Contains(excludeAudioType, mimeType) && strings.HasPrefix(mimeType, "audio/")
 }
 
 func IsImageFile(filePath string) bool {
 	extension := filepath.Ext(filePath)
-	return strings.HasPrefix(mime.TypeByExtension(extension), "image/")
+	return strings.HasPrefix(consts.MimeTypeByExtension(extension), "image/")
 }
 
 func IsValidPlaylist(filePath string) bool {

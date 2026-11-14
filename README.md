@@ -13,6 +13,23 @@
 Navidrome is an open source web-based music collection server and streamer. It gives you freedom to listen to your
 music collection from any browser or mobile device. It's like your personal Spotify!
 
+## Custom MIME types
+
+Navidrome includes its default MIME type definitions in `consts/mime_types.yaml`.
+You can replace the complete definition at `<DataFolder>/resources/mime_types.yaml`.
+The file must contain the `audio`, `image`, and `other` sections. Audio entries
+use `type` and required `lossless` fields; image and other entries are MIME type
+strings. Extensions must be lowercase and start with a dot, and each extension
+may appear only once across all sections.
+
+The override is a complete replacement for the embedded document. It is read
+after configuration loading, including for `navidrome inspect`, and a restart
+is required after changing it. A missing file uses the embedded defaults;
+malformed or invalid files stop startup. Navidrome's media and file type
+lookups use only the selected document; omitted extensions are not supported.
+The Go standard library's separate MIME registry is unaffected and may still
+determine HTTP content types for extensions omitted from the document.
+
 
 **Note**: The `master` branch may be in an unstable or even broken state during development. 
 Please use [releases](https://github.com/navidrome/navidrome/releases) instead of 

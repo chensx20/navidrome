@@ -3,7 +3,6 @@ package model
 import (
 	"cmp"
 	"encoding/json"
-	"mime"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -77,7 +76,7 @@ type MediaFile struct {
 }
 
 func (mf MediaFile) ContentType() string {
-	return mime.TypeByExtension("." + mf.Suffix)
+	return consts.MimeTypeByExtension("." + mf.Suffix)
 }
 
 func (mf MediaFile) CoverArtID() ArtworkID {

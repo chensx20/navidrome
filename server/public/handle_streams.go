@@ -39,6 +39,9 @@ func (pub *Router) handleStream(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Content-Duration", strconv.FormatFloat(float64(stream.Duration()), 'G', -1, 32))
+	if contentType := stream.ContentType(); contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
 
 	if stream.Seekable() {
 		http.ServeContent(w, r, stream.Name(), stream.ModTime(), stream)

@@ -1,0 +1,80 @@
+audio:
+  .aac:
+    type: audio/mp4
+    lossless: false
+  .aif:
+    type: audio/x-aiff
+    lossless: false
+  .aiff:
+    type: audio/x-aiff
+    lossless: false
+  .alac:
+    type: audio/mp4
+    lossless: true
+  .ape:
+    type: audio/x-monkeys-audio
+    lossless: true
+  .dsf:
+    type: audio/dsd
+    lossless: true
+  .flac:
+    type: audio/flac
+    lossless: true
+  .m3u:
+    type: audio/x-mpegurl
+    lossless: false
+  .m4a:
+    type: audio/mp4
+    lossless: false
+  .m4b:
+    type: audio/mp4
+    lossless: false
+  .mka:
+    type: audio/x-matroska
+    lossless: false
+  .mp3:
+    type: audio/mpeg
+    lossless: false
+  .mpc:
+    type: audio/x-musepack
+    lossless: false
+  .oga:
+    type: audio/ogg
+    lossless: false
+  .ogg:
+    type: audio/ogg
+    lossless: false
+  .opus:
+    type: audio/ogg
+    lossless: false
+  .pls:
+    type: audio/x-scpls
+    lossless: false
+  .shn:
+    type: audio/x-shn
+    lossless: true
+  .tak:
+    type: audio/tak
+    lossless: true
+  .wav:
+    type: audio/x-wav
+    lossless: true
+  .wma:
+    type: audio/x-ms-wma
+    lossless: false
+  .wv:
+    type: audio/x-wavpack
+    lossless: true
+  .wvp:
+    type: audio/x-wavpack
+    lossless: true
+image:
+  .bmp: image/bmp
+  .gif: image/gif
+  .jpeg: image/jpeg
+  .jpg: image/jpeg
+  .png: image/png
+  .webp: image/webp
+other:
+  .css: text/css
+  .js: text/javascript

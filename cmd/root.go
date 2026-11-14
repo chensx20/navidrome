@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -36,8 +37,8 @@ var (
 		Short: "Navidrome is a self-hosted music server and streamer",
 		Long: `Navidrome is a self-hosted music server and streamer.
 Complete documentation is available at https://www.navidrome.org/docs`,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			preRun()
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return preRun()
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			runNavidrome()
@@ -54,11 +55,15 @@ func Execute() {
 	}
 }
 
-func preRun() {
+func preRun() error {
 	if !noBanner {
 		println(resources.Banner())
 	}
 	conf.Load()
+	if err := consts.LoadMimeTypesOverride(filepath.Join(conf.Server.DataFolder, "resources", "mime_types.yaml")); err != nil {
+		return fmt.Errorf("error loading MIME types: %w", err)
+	}
+	return nil
 }
 
 func runNavidrome() {
