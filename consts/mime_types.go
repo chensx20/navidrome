@@ -97,6 +97,9 @@ func loadMimeTypes(data []byte) error {
 		}
 	}
 
+	// AddExtensionType only rejects a missing leading dot or an invalid media
+	// type. Both are checked for every entry before any registry mutation.
+	// It replaces existing registrations, including those supplied by the OS.
 	for extension, value := range types.Audio {
 		if err := mime.AddExtensionType(extension, value.Type); err != nil {
 			return fmt.Errorf("register %s: %w", extension, err)

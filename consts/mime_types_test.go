@@ -54,6 +54,57 @@ func TestLoadMimeTypesRejectsInvalidDocumentWithoutChangingState(t *testing.T) {
 	}
 }
 
+func TestLoadMimeTypesReplacementAndValidationAreAtomic(t *testing.T) {
+	beforeLossless := append([]string(nil), LosslessFormats...)
+	beforeMP3 := mime.TypeByExtension(".mp3")
+	document := []byte("audio:\n  .txnfirst: {type: audio/txn, lossless: true}\n  .txnbad: {type: invalid, lossless: false}\nimage: {}\nother: {}\n")
+	if err := loadMimeTypes(document); err == nil {
+		t.Fatal("invalid MIME registration returned nil")
+	}
+	if got := mime.TypeByExtension(".txnfirst"); got != "" {
+		t.Fatalf("failed document registered .txnfirst as %q", got)
+	}
+	if got := mime.TypeByExtension(".mp3"); got != beforeMP3 {
+		t.Fatalf("failed document changed .mp3 from %q to %q", beforeMP3, got)
+	}
+	if !equalStrings(LosslessFormats, beforeLossless) {
+		t.Fatalf("failed document changed lossless formats: %v", LosslessFormats)
+	}
+
+	if err := loadMimeTypes([]byte("audio: { .mp3: {type: audio/replaced, lossless: false} }\nimage: {}\nother: {}\n")); err != nil {
+		t.Fatalf("replacement of a pre-registered extension failed: %v", err)
+	}
+	if got := mime.TypeByExtension(".mp3"); got != "audio/replaced" {
+		t.Fatalf("replacement .mp3 MIME type = %q", got)
+	}
+	t.Cleanup(func() {
+		if err := loadMimeTypes(embeddedMimeTypes); err != nil {
+			t.Fatalf("restore embedded MIME types: %v", err)
+		}
+	})
+}
+
+func TestRegisterMimeTypeFailureDoesNotPublishState(t *testing.T) {
+	if err := loadMimeTypes([]byte("audio: { .registerfailure: {type: audio/valid, lossless: false}, .registrationbad: {type: invalid, lossless: false} }\nimage: {}\nother: {}\n")); err == nil {
+		t.Fatal("invalid registration document returned nil")
+	}
+	if got := mime.TypeByExtension(".registerfailure"); got != "" {
+		t.Fatalf("failed document registered .registerfailure as %q", got)
+	}
+}
+
+func equalStrings(left, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for index := range left {
+		if left[index] != right[index] {
+			return false
+		}
+	}
+	return true
+}
+
 func TestLoadMimeTypesCustomDocument(t *testing.T) {
 	t.Cleanup(func() {
 		if err := loadMimeTypes(embeddedMimeTypes); err != nil {
