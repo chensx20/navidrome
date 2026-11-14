@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mime"
 	"net/http"
 	"sort"
 	"strconv"
@@ -169,7 +168,7 @@ func childFromMediaFile(ctx context.Context, mf model.MediaFile) responses.Child
 	format, _ := getTranscoding(ctx)
 	if mf.Suffix != "" && format != "" && mf.Suffix != format {
 		child.TranscodedSuffix = format
-		child.TranscodedContentType = mime.TypeByExtension("." + format)
+		child.TranscodedContentType = consts.MimeTypeByExtension("." + format)
 	}
 	child.BookmarkPosition = mf.BookmarkPosition
 	child.Comment = mf.Comment

@@ -25,8 +25,10 @@ may appear only once across all sections.
 The override is a complete replacement for the embedded document. It is read
 after configuration loading, including for `navidrome inspect`, and a restart
 is required after changing it. A missing file uses the embedded defaults;
-malformed or invalid files stop startup. The Go MIME registry may retain
-standard-library mappings omitted by an override.
+malformed or invalid files stop startup. Navidrome's media and file type
+lookups use only the selected document; omitted extensions are not supported.
+The Go standard library's separate MIME registry is unaffected and may still
+determine HTTP content types for extensions omitted from the document.
 
 
 **Note**: The `master` branch may be in an unstable or even broken state during development. 

@@ -1,13 +1,18 @@
 package cmd
 
 import (
-	"mime"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"testing/fstest"
 
+	"github.com/navidrome/navidrome/consts"
+	"github.com/navidrome/navidrome/model"
+	"github.com/navidrome/navidrome/server"
 	"github.com/spf13/cobra"
 )
 
@@ -24,15 +29,26 @@ func TestMimeTypesStartupHelper(t *testing.T) {
 		_, _ = os.Stderr.WriteString(err.Error() + "\n")
 		os.Exit(3)
 	}
-	_, _ = os.Stdout.WriteString("mime=" + mime.TypeByExtension(".startup") + "\n")
+	_, _ = os.Stdout.WriteString("mime=" + consts.MimeTypeByExtension(".startup") + "\n")
+	_, _ = os.Stdout.WriteString("flac=" + consts.MimeTypeByExtension(".flac") + "\n")
+	_, _ = os.Stdout.WriteString("jpg=" + consts.MimeTypeByExtension(".jpg") + "\n")
+	_, _ = os.Stdout.WriteString("css=" + consts.MimeTypeByExtension(".css") + "\n")
+	response := httptest.NewRecorder()
+	assets := fstest.MapFS{"file.startup": &fstest.MapFile{Data: []byte("content")}}
+	server.FileServer(http.FS(assets)).ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/file.startup", nil))
+	_, _ = os.Stdout.WriteString("http=" + response.Header().Get("Content-Type") + "\n")
+	if model.IsAudioFile("file.flac") || model.IsImageFile("file.jpg") {
+		_, _ = os.Stdout.WriteString("defaults-detected\n")
+	}
 }
 
 func TestMimeTypesStartupOverrides(t *testing.T) {
 	tests := []struct {
-		name       string
-		setup      func(string) error
-		wantOutput string
-		wantError  string
+		name        string
+		setup       func(string) error
+		wantOutput  string
+		wantError   string
+		wantOmitted bool
 	}{
 		{name: "absent", wantOutput: "inspect-ran\nmime=\n"},
 		{
@@ -40,7 +56,8 @@ func TestMimeTypesStartupOverrides(t *testing.T) {
 			setup: func(filename string) error {
 				return os.WriteFile(filename, []byte("audio: { .startup: {type: audio/startup, lossless: false} }\nimage: {}\nother: {}\n"), 0o600)
 			},
-			wantOutput: "inspect-ran\nmime=audio/startup",
+			wantOutput:  "inspect-ran\nmime=audio/startup",
+			wantOmitted: true,
 		},
 		{
 			name: "malformed",
@@ -81,6 +98,9 @@ func TestMimeTypesStartupOverrides(t *testing.T) {
 			}
 			if test.wantOutput != "" && !strings.Contains(string(output), test.wantOutput) {
 				t.Fatalf("startup output %q does not contain %q", output, test.wantOutput)
+			}
+			if test.wantOmitted && (!strings.Contains(string(output), "flac=\njpg=\ncss=\nhttp=audio/startup\n") || strings.Contains(string(output), "defaults-detected")) {
+				t.Fatalf("omitted defaults remain active: %s", output)
 			}
 		})
 	}

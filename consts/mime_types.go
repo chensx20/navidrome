@@ -33,6 +33,13 @@ var extensionPattern = regexp.MustCompile(`^\.[a-z0-9]+(?:[.-][a-z0-9]+)*$`)
 
 var LosslessFormats []string
 
+var mimeTypesByExtension map[string]string
+
+// MimeTypeByExtension returns the configured MIME type for an extension.
+func MimeTypeByExtension(extension string) string {
+	return mimeTypesByExtension[strings.ToLower(extension)]
+}
+
 func init() {
 	if err := loadMimeTypes(embeddedMimeTypes); err != nil {
 		panic(fmt.Errorf("load embedded MIME types: %w", err))
@@ -97,23 +104,15 @@ func loadMimeTypes(data []byte) error {
 		}
 	}
 
-	// AddExtensionType only rejects a missing leading dot or an invalid media
-	// type. Both are checked for every entry before any registry mutation.
-	// It replaces existing registrations, including those supplied by the OS.
+	registered := make(map[string]string, len(seen))
 	for extension, value := range types.Audio {
-		if err := mime.AddExtensionType(extension, value.Type); err != nil {
-			return fmt.Errorf("register %s: %w", extension, err)
-		}
+		registered[extension] = formatMIME(value.Type)
 	}
 	for extension, value := range types.Image {
-		if err := mime.AddExtensionType(extension, value); err != nil {
-			return fmt.Errorf("register %s: %w", extension, err)
-		}
+		registered[extension] = formatMIME(value)
 	}
 	for extension, value := range types.Other {
-		if err := mime.AddExtensionType(extension, value); err != nil {
-			return fmt.Errorf("register %s: %w", extension, err)
-		}
+		registered[extension] = formatMIME(value)
 	}
 
 	lossless := make([]string, 0)
@@ -123,8 +122,16 @@ func loadMimeTypes(data []byte) error {
 		}
 	}
 	sort.Strings(lossless)
+	mimeTypesByExtension = registered
 	LosslessFormats = lossless
 	return nil
+}
+
+func formatMIME(value string) string {
+	if strings.HasPrefix(value, "text/") {
+		return mime.FormatMediaType(value, map[string]string{"charset": "utf-8"})
+	}
+	return value
 }
 
 func validateExtension(extension string, seen map[string]struct{}) error {

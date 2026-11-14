@@ -228,8 +228,19 @@ func (s *Server) frontendAssetsHandler() http.Handler {
 	r := chi.NewRouter()
 
 	r.Handle("/", Index(s.ds, ui.BuildAssets()))
-	r.Handle("/*", http.StripPrefix(s.appRoot, http.FileServer(http.FS(ui.BuildAssets()))))
+	r.Handle("/*", http.StripPrefix(s.appRoot, FileServer(http.FS(ui.BuildAssets()))))
 	return r
+}
+
+// FileServer serves files using configured MIME types when available.
+func FileServer(files http.FileSystem) http.Handler {
+	handler := http.FileServer(files)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if contentType := consts.MimeTypeByExtension(path.Ext(r.URL.Path)); contentType != "" {
+			w.Header().Set("Content-Type", contentType)
+		}
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func AbsoluteURL(r *http.Request, u string, params url.Values) string {

@@ -1,7 +1,6 @@
 package consts
 
 import (
-	"mime"
 	"os"
 	"path/filepath"
 	"testing"
@@ -29,7 +28,7 @@ func TestEmbeddedMimeTypes(t *testing.T) {
 		".bmp": "image/bmp", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
 	}
 	for extension, want := range expected {
-		if got := mime.TypeByExtension(extension); got != want {
+		if got := MimeTypeByExtension(extension); got != want {
 			t.Errorf("MIME type for %s = %q, want %q", extension, got, want)
 		}
 	}
@@ -49,22 +48,22 @@ func TestLoadMimeTypesRejectsInvalidDocumentWithoutChangingState(t *testing.T) {
 			t.Fatalf("lossless formats changed after failed validation: %v", LosslessFormats)
 		}
 	}
-	if got := mime.TypeByExtension(".bad"); got != "" {
+	if got := MimeTypeByExtension(".bad"); got != "" {
 		t.Fatalf("invalid document registered .bad as %q", got)
 	}
 }
 
 func TestLoadMimeTypesReplacementAndValidationAreAtomic(t *testing.T) {
 	beforeLossless := append([]string(nil), LosslessFormats...)
-	beforeMP3 := mime.TypeByExtension(".mp3")
+	beforeMP3 := MimeTypeByExtension(".mp3")
 	document := []byte("audio:\n  .txnfirst: {type: audio/txn, lossless: true}\n  .txnbad: {type: invalid, lossless: false}\nimage: {}\nother: {}\n")
 	if err := loadMimeTypes(document); err == nil {
 		t.Fatal("invalid MIME registration returned nil")
 	}
-	if got := mime.TypeByExtension(".txnfirst"); got != "" {
+	if got := MimeTypeByExtension(".txnfirst"); got != "" {
 		t.Fatalf("failed document registered .txnfirst as %q", got)
 	}
-	if got := mime.TypeByExtension(".mp3"); got != beforeMP3 {
+	if got := MimeTypeByExtension(".mp3"); got != beforeMP3 {
 		t.Fatalf("failed document changed .mp3 from %q to %q", beforeMP3, got)
 	}
 	if !equalStrings(LosslessFormats, beforeLossless) {
@@ -74,8 +73,13 @@ func TestLoadMimeTypesReplacementAndValidationAreAtomic(t *testing.T) {
 	if err := loadMimeTypes([]byte("audio: { .mp3: {type: audio/replaced, lossless: false} }\nimage: {}\nother: {}\n")); err != nil {
 		t.Fatalf("replacement of a pre-registered extension failed: %v", err)
 	}
-	if got := mime.TypeByExtension(".mp3"); got != "audio/replaced" {
+	if got := MimeTypeByExtension(".mp3"); got != "audio/replaced" {
 		t.Fatalf("replacement .mp3 MIME type = %q", got)
+	}
+	for _, extension := range []string{".flac", ".jpg", ".css"} {
+		if got := MimeTypeByExtension(extension); got != "" {
+			t.Errorf("omitted extension %s resolved to %q", extension, got)
+		}
 	}
 	t.Cleanup(func() {
 		if err := loadMimeTypes(embeddedMimeTypes); err != nil {
@@ -88,7 +92,7 @@ func TestRegisterMimeTypeFailureDoesNotPublishState(t *testing.T) {
 	if err := loadMimeTypes([]byte("audio: { .registerfailure: {type: audio/valid, lossless: false}, .registrationbad: {type: invalid, lossless: false} }\nimage: {}\nother: {}\n")); err == nil {
 		t.Fatal("invalid registration document returned nil")
 	}
-	if got := mime.TypeByExtension(".registerfailure"); got != "" {
+	if got := MimeTypeByExtension(".registerfailure"); got != "" {
 		t.Fatalf("failed document registered .registerfailure as %q", got)
 	}
 }
@@ -115,13 +119,13 @@ func TestLoadMimeTypesCustomDocument(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := mime.TypeByExtension(".customaudio"); got != "audio/custom" {
+	if got := MimeTypeByExtension(".customaudio"); got != "audio/custom" {
 		t.Fatalf("custom audio MIME type = %q", got)
 	}
-	if got := mime.TypeByExtension(".customimage"); got != "image/custom" {
+	if got := MimeTypeByExtension(".customimage"); got != "image/custom" {
 		t.Fatalf("custom image MIME type = %q", got)
 	}
-	if got := mime.TypeByExtension(".customother"); got != "application/custom" {
+	if got := MimeTypeByExtension(".customother"); got != "application/custom" {
 		t.Fatalf("custom other MIME type = %q", got)
 	}
 	if len(LosslessFormats) != 1 || LosslessFormats[0] != "customaudio" {
