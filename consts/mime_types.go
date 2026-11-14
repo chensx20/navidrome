@@ -17,7 +17,7 @@ import (
 
 type mimeType struct {
 	Type     string `yaml:"type"`
-	Lossless bool   `yaml:"lossless"`
+	Lossless *bool  `yaml:"lossless"`
 }
 
 type mimeTypes struct {
@@ -76,6 +76,9 @@ func loadMimeTypes(data []byte) error {
 		if err := validateMIME(extension, value.Type); err != nil {
 			return err
 		}
+		if value.Lossless == nil {
+			return fmt.Errorf("missing lossless field for %s", extension)
+		}
 	}
 	for extension, value := range types.Image {
 		if err := validateExtension(extension, seen); err != nil {
@@ -112,7 +115,7 @@ func loadMimeTypes(data []byte) error {
 
 	lossless := make([]string, 0)
 	for extension, value := range types.Audio {
-		if value.Lossless {
+		if *value.Lossless {
 			lossless = append(lossless, strings.TrimPrefix(extension, "."))
 		}
 	}
@@ -137,7 +140,8 @@ func validateMIME(extension, value string) error {
 		return fmt.Errorf("invalid MIME type for %s: %q", extension, value)
 	}
 	parsed, _, err := mime.ParseMediaType(value)
-	if err != nil || parsed != value {
+	mediaType, mediaSubtype, hasSubtype := strings.Cut(parsed, "/")
+	if err != nil || parsed != value || !hasSubtype || mediaType == "" || mediaSubtype == "" {
 		return fmt.Errorf("invalid MIME type for %s: %q", extension, value)
 	}
 	return nil

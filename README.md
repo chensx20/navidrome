@@ -18,7 +18,7 @@ music collection from any browser or mobile device. It's like your personal Spot
 Navidrome includes its default MIME type definitions in `consts/mime_types.yaml`.
 You can replace the complete definition at `<DataFolder>/resources/mime_types.yaml`.
 The file must contain the `audio`, `image`, and `other` sections. Audio entries
-use `type` and may set `lossless: true`; image and other entries are MIME type
+use `type` and required `lossless` fields; image and other entries are MIME type
 strings. Extensions must be lowercase and start with a dot, and each extension
 may appear only once across all sections.
 
